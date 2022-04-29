@@ -13,8 +13,8 @@ export default class App extends Component {
   render () {
     return (
       <Layout>
-        <Route exact path='/' component={Forecasts} />
-        <Route exact path='/current' component={CurrentUsage} />
+        <Route exact path='/forecasts' component={Forecasts} />
+        <Route exact path='/current-usage' component={CurrentUsage} />
         <Route exact path='/about' component={About} />
       </Layout>
     );

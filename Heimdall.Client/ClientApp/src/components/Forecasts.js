@@ -118,7 +118,7 @@ export class Forecasts extends Component {
 
     return (
       <div>
-        <h1 id="tabelLabel">Carbon Intensity Forecasts</h1>
+        <h1 id="tabelLabel">Forecasts</h1>
         <p>Carbon forecasts for the next 96 hours by regions across the UK.</p>
         {contents}
       </div>

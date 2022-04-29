@@ -15,19 +15,50 @@ export class CurrentUsage extends Component {
     this.populateCarbonData();
   }
 
+  static rowColor = (d) => {
+    var style = '';
+    if (d === 'very high') {
+      style='veryhigh';
+    } else if (d === 'high') {
+      style='high';
+    } else if (d === 'moderate') {
+      style='high';
+    } else if (d === 'low') {
+      style='low';
+    } else if (d === 'very low') {
+      style='verylow';
+    } else {
+      style='';
+    }
+
+    return style;
+ }
+
+ static formatDatetime = (date) => {
+  return date.replace(':00+00:00', '').replace('T',' ').split('+')[0]
+ }
+
   static renderForecastsTable(forecastsByRegion) {
-    return (
+   return (
       <div>
           <p>
             Carbon intensity (gCO2/kWh) by regions across the UK, 
-            between <strong>{forecastsByRegion[0].from.replace(':00+00:00', '').replace('T',' ')}</strong> and <strong>{forecastsByRegion[0].to.replace(':00+00:00', '').replace('T',' ')}</strong>
+            between <strong>{this.formatDatetime(forecastsByRegion[0].from)}</strong> and <strong>{this.formatDatetime(forecastsByRegion[0].to)}</strong> (times in UTC)
           </p>
-          <table className='table table-striped' aria-labelledby="tabelLabel">
-            <thead>
+          <p>
+            <b>Key: </b>
+            <br></br><b className="veryhigh">Very High</b>
+            <br></br><b className="high">High</b>
+            <br></br><b className="moderate">Moderate</b>
+            <br></br><b className="low">Low</b>
+            <br></br><b className="verylow">Very Low</b>
+          </p>
+          <table className="table table-sm" aria-labelledby="tabelLabel">
+            <thead className="thead-light">
               <tr>
-                <th>Shortname</th>
+                <th>Region</th>
                 <th>Carbon Intensity</th>
-                <th>Description</th>
+                {/* <th>Description</th> */}
                 <th>Gas</th>
                 <th>Coal</th>
                 <th>Biomass</th>
@@ -42,10 +73,10 @@ export class CurrentUsage extends Component {
             </thead>
             <tbody>
             {forecastsByRegion.map(value => 
-                <tr key={value.date}>
+                <tr key={value.shortname}>
                   <td>{value.shortname}</td>
-                  <td>{value.forecast}</td>
-                  <td>{value.forecastDescription}</td>
+                  <td className={this.rowColor(value.forecastDescription)}>{value.forecast}</td>
+                  {/* <td>{value.forecastDescription}</td> */}
                   <td>{value.gas}</td>
                   <td>{value.coal}</td>
                   <td>{value.biomass}</td>
@@ -74,7 +105,7 @@ export class CurrentUsage extends Component {
 
     return (
       <div>
-        <h1 id="tabelLabel">Carbon Intensity Forecasts</h1>
+        <h1 id="tabelLabel">Current Usage</h1>
         {contents}
       </div>
     );
