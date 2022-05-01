@@ -1,0 +1,39 @@
+/* Provide sufficient contrast against white background */
+a {
+  color: #0366d6;
+}
+
+code {
+  color: #E01A76;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.veryhigh {
+  background-color: #A93226;
+  padding: 2px;
+}
+
+.high {
+  background-color: #E67E22;
+  padding: 2px;
+}
+
+.moderate {
+  background-color: #F1C40F;
+  padding: 2px;
+}
+
+.low {
+  background-color: #7DCEA0;
+  padding: 2px;
+}
+
+.verylow {
+  background-color: #1E8449;
+  padding: 2px;
+}
