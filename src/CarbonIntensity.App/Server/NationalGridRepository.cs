@@ -28,7 +28,7 @@ namespace CarbonIntensity.App.Server
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            IgnoreNullValues = true,
+            // IgnoreNullValues = true,
             AllowTrailingCommas = true,
             IgnoreReadOnlyProperties = true
         };

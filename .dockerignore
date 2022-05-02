@@ -1,0 +1,11 @@
+# Ignore everything
+**
+
+# Allow files and directories
+!src/CarbonIntensity.App
+
+# Ignore unnecessary files inside allowed directories
+# This should go after the allowed directories
+**/bin/*
+**/obj/*
+**/.idea/*

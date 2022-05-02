@@ -3,11 +3,10 @@ FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 
 WORKDIR /src
 
-# install NodeJS 13.x
-# see https://github.com/nodesource/distributions/blob/master/README.md#deb
+# install NodeJS 14.x, see https://github.com/nodesource/distributions/blob/master/README.md#deb
 RUN apt-get update -yq 
 RUN apt-get install curl gnupg -yq 
-RUN curl -sL https://deb.nodesource.com/setup_13.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get install -y nodejs
 
 COPY src/CarbonIntensity.App/CarbonIntensity.App.csproj .
