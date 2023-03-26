@@ -13,22 +13,21 @@ namespace CarbonIntensity.App.Server
     public interface INationalGridRepository
     {
         Task TryExecuteAsync(CancellationToken cancellationToken);
-        Dictionary<string, List<CarbonIntensity>> ForecastsByRegion { get; }
+        Dictionary<string, List<CarbonIntensity>> GetForecastsByRegion();
+        IEnumerable<CarbonIntensity> GetCurrentUsageForRegions();
     }
 
     public class NationalGridRepository : INationalGridRepository
     {
         private readonly ILogger _logger;
         private readonly HttpClient _httpClient;
-        private readonly int HistoricalOffsetDays = 1;
-        public Dictionary<string, List<CarbonIntensity>> ForecastsByRegion { get; private set; } = new();
-
+        private readonly int _historicalOffsetDays = 1;
+        private readonly Dictionary<string, List<CarbonIntensity>> _forecastsByRegion = new();
 
         private readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             PropertyNameCaseInsensitive = true,
-            IgnoreNullValues = true,
             AllowTrailingCommas = true,
             IgnoreReadOnlyProperties = true
         };
@@ -57,6 +56,22 @@ namespace CarbonIntensity.App.Server
             }
         }
 
+        public Dictionary<string, List<CarbonIntensity>> GetForecastsByRegion()
+        {
+            return _forecastsByRegion;
+        }
+
+        public IEnumerable<CarbonIntensity> GetCurrentUsageForRegions()
+        {
+            var (intervalStart, intervalEnd) = GetInterval();
+
+            var forecasts = _forecastsByRegion
+                .SelectMany(x => x.Value.Where(r => r.From >= intervalStart && r.To <= intervalEnd))
+                .OrderBy(x => x.RegionId);
+
+            return forecasts;
+        }
+
         private async Task RunAsync(CancellationToken cancellationToken)
         {
             var utcNow = DateTime.UtcNow;
@@ -64,7 +79,7 @@ namespace CarbonIntensity.App.Server
                 new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, 0, 0, DateTimeKind.Utc);
 
             var forecastFromDate = utcNowRoundedToHourStart.AddMinutes(30);
-            var historicalRange = (utcNowRoundedToHourStart.AddDays(-HistoricalOffsetDays), utcNowRoundedToHourStart);
+            var historicalRange = (utcNowRoundedToHourStart.AddDays(-_historicalOffsetDays), utcNowRoundedToHourStart);
 
             _logger.LogInformation("Fetching forecasts");
 
@@ -73,7 +88,7 @@ namespace CarbonIntensity.App.Server
             if (results.Count > 0)
             {
                 _logger.LogInformation("Forecasts cache cleared");
-                ForecastsByRegion = new Dictionary<string, List<CarbonIntensity>>();
+                _forecastsByRegion.Clear();
             }
 
             var key = 1;
@@ -126,13 +141,13 @@ namespace CarbonIntensity.App.Server
                         _logger.LogError(e, "There was an error!");
                     }
 
-                    if (ForecastsByRegion.TryGetValue(ci.Shortname, out var intensities))
+                    if (_forecastsByRegion.TryGetValue(ci.Shortname, out var intensities))
                     {
                         intensities.Add(ci);
                     }
                     else
                     {
-                        ForecastsByRegion.Add(ci.Shortname, new List<CarbonIntensity>() { ci });
+                        _forecastsByRegion.Add(ci.Shortname, new List<CarbonIntensity>() { ci });
                     }
                 }
             }
@@ -184,6 +199,24 @@ namespace CarbonIntensity.App.Server
             _logger.LogInformation("Deserialized stream");
 
             return data;
+        }
+        
+        
+        private static (DateTime intervalStart, DateTime intervalEnd) GetInterval()
+        {
+            var utcNow = DateTime.UtcNow;
+            var intervalStart =
+                new DateTime(utcNow.Year, utcNow.Month, utcNow.Day, utcNow.Hour, 0, 0, DateTimeKind.Utc);
+
+            // Round to the most recent completed 30-min period
+            if (utcNow.Minute <= 30)
+            {
+                intervalStart = intervalStart.AddMinutes(-30);
+            }
+            
+            var intervalEnd = intervalStart.AddMinutes(30);
+
+            return (intervalStart, intervalEnd);
         }
     }
 }
